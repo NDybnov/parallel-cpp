@@ -12,7 +12,7 @@ class UnbufferedChannel{
 
   void Send(const T& value) {
       std::unique_lock<std::mutex> s_lock(sblock__);
-      std::unique_lock<std::mutex> locker(ublock_);
+      std::unique_lock<std::mutex> locker(all_block_);
       if (closed_) {
         throw std::runtime_error("Channel is closed");
       }
@@ -29,7 +29,7 @@ class UnbufferedChannel{
 
   std::optional<T> Recv() {
       std::unique_lock<std::mutex> r_lock(rblock_);
-      std::unique_lock<std::mutex> locker(ublock_);
+      std::unique_lock<std::mutex> locker(all_block_);
       ready_to_ship_.wait(locker, [&] {
         return placed_ || closed_;
       });
@@ -43,7 +43,7 @@ class UnbufferedChannel{
   }
 
   void Close() {
-    std::unique_lock<std::mutex> locker(ublock_);
+    std::unique_lock<std::mutex> locker(all_block_);
     closed_ = true;
     ready_to_ship_.notify_all();
     grab_.notify_all();
@@ -53,7 +53,7 @@ class UnbufferedChannel{
   T const *value_pointer_;
   bool closed_ = false;
   bool placed_ = false;
-  std::mutex ublock_;
+  std::mutex all_block_;
   std::mutex sblock__;
   std::mutex rblock_;
   std::condition_variable ready_to_ship_;
