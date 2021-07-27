@@ -31,24 +31,31 @@ class Fork {
 
 class Philosopher {
  public:
-  Philosopher(size_t /*id*/, Fork* /*left_fork*/, Fork* /*right_fork*/) {
-    // Your code
-  }
+  Philosopher(size_t id, Fork* left_fork, Fork* right_fork)
+      : id_(id)
+      , fork_left_(left_fork)
+      , fork_right_(right_fork)
+  {}
 
   size_t Id() const {
-    // Your code
-    return -1;
+    return id_;
   }
 
   void Eat() {
-    // Your code
+    if (fork_left_->Id() > fork_right_->Id()) {
+        std::swap(fork_left_, fork_right_);
+    }
+    fork_left_->Get();
+    fork_right_->Get();
   }
 
   void Think() {
-    // Your code
+    fork_left_->Put();
+    fork_right_->Put();
   }
 
  private:
-  // Your code
+  const size_t id_;
+  Fork* fork_left_;
+  Fork* fork_right_;
 };
-
