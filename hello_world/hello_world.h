@@ -4,6 +4,7 @@
 #include <thread>
 #include <mutex>
 #include <vector>
+#include <string_view>
 
 class HelloWorld {
  public:
@@ -18,14 +19,16 @@ class HelloWorld {
     std::mutex os_mutex;
     std::vector<std::thread> threads;
     for (size_t i = 0; i < n_threads_; ++i) {
-        threads.emplace_back([&] () {
-            std::unique_lock<std::mutex> os_locker(os_mutex);
-            os << kHelloPrefix <<  std::this_thread::get_id() << '\n';
-        });
+      threads.emplace_back(
+        [&] () {
+          std::unique_lock<std::mutex> os_locker(os_mutex);
+          os << kHelloPrefix << std::this_thread::get_id() << '\n';
+        }
+      );
     }
     for (size_t i = 0; i < n_threads_; ++i) {
         threads[i].join();
-7    }
+    }
   }
 
  private:
