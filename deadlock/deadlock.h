@@ -1,20 +1,27 @@
 #pragma once
 
 
+#include <chrono>
+#include <thread>
+#include <mutex>
+
 class Deadlock {
  public:
-  Deadlock() {
-  }
+    Deadlock() {}
 
   void ThreadOne() {
-    // Your
+      std::unique_lock<std::mutex> locker2(mutex2_);
+      std::this_thread::sleep_for(std::chrono::milliseconds(10));
+      std::unique_lock<std::mutex> locker1(mutex1_);
   }
 
   void ThreadTwo() {
-    // Your
+      std::unique_lock<std::mutex> locker1(mutex1_);
+      std::this_thread::sleep_for(std::chrono::milliseconds(10));
+      std::unique_lock<std::mutex> locker2(mutex2_);
   }
 
  private:
-  // Your
+  std::mutex mutex1_;
+  std::mutex mutex2_;
 };
-
