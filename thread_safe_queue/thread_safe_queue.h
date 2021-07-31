@@ -17,11 +17,11 @@ class ThreadSafeQueue {
   void Push(const T& value) {
     std::unique_lock<std::mutex> queue_locker(queue_mutex_);
     queue_.push(value);
+    cv.notify_one();
   }
 
   T Pop() {
     std::unique_lock<std::mutex> queue_locker(queue_mutex_);
-    std::condition_variable cv;
     cv.wait(queue_locker, [&]{return !queue_.epmty();});
     auto value = queue_.front();
     queue_.pop();
@@ -42,4 +42,5 @@ class ThreadSafeQueue {
  private:
   std::mutex queue_mutex_;
   std::queue<T> queue_;
+  std::condition_variable cv;
 };
