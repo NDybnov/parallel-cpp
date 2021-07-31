@@ -1,5 +1,9 @@
 #pragma once
 
+#include <condition_variable>
+#include <mutex>
+#include <thread>
+
 #include <optional>
 #include <queue>
 
@@ -11,19 +15,21 @@ class ThreadSafeQueue {
   }
 
   void Push(const T& value) {
-    // Your code
+    std::unique_lock<std::mutex> queue_locker(queue_mutex_);
     queue_.push(value);
+    cv.notify_one();
   }
 
   T Pop() {
-    // Your code
+    std::unique_lock<std::mutex> queue_locker(queue_mutex_);
+    cv.wait(queue_locker, [&]{return !queue_.epmty();});
     auto value = queue_.front();
     queue_.pop();
     return value;
   }
 
   std::optional<T> TryPop() {
-    // Your code
+    std::unique_lock<std::mutex> queue_locker(queue_mutex_);
     if (queue_.empty()) {
       return std::nullopt;
     }
@@ -34,7 +40,7 @@ class ThreadSafeQueue {
 
 
  private:
-  // Your code
+  std::mutex queue_mutex_;
   std::queue<T> queue_;
+  std::condition_variable cv;
 };
-
