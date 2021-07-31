@@ -15,33 +15,32 @@ class ThreadSafeQueue {
   }
 
   void Push(const T& value) {
-    queue_mutex_.lock();
+    std::unique_lock<std::mutex> queue_locker(queue_mutex_);
     queue_.push(value);
-    queue_mutex_.unlock();
   }
 
   T Pop() {
-    queue_mutex_.lock();
+    std::unique_lock<std::mutex> queue_locker(queue_mutex_);
+    std::condition_variable cv;
+    cv.wait(queue_locker, [&]{return !queue_.epmty();});
     while (queue_.empty()) {
-        queue_mutex_.unlock();
+        queue_locker.unlock();
         std::this_thread::yield();
-        queue_mutex_.lock();
+        queue_locker.lock();
     }
     auto value = queue_.front();
     queue_.pop();
-    queue_mutex_.unlock();
+    queue_locker.unlock();
     return value;
   }
 
   std::optional<T> TryPop() {
-    queue_mutex_.lock();
+    std::unique_lock<std::mutex> queue_locker(queue_mutex_);
     if (queue_.empty()) {
-        queue_mutex_.unlock();
       return std::nullopt;
     }
     auto value = queue_.front();
     queue_.pop();
-    queue_mutex_.unlock();
     return value;
   }
 
@@ -50,4 +49,3 @@ class ThreadSafeQueue {
   std::mutex queue_mutex_;
   std::queue<T> queue_;
 };
-
