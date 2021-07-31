@@ -19,5 +19,5 @@ class TicketLock {
   }
 
  private:
-  std::atomic<int> now_serving_, next_ticket_;
+  std::atomic<uint64_t> now_serving_, next_ticket_;
 };
