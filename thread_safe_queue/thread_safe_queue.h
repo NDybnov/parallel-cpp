@@ -23,14 +23,8 @@ class ThreadSafeQueue {
     std::unique_lock<std::mutex> queue_locker(queue_mutex_);
     std::condition_variable cv;
     cv.wait(queue_locker, [&]{return !queue_.epmty();});
-    while (queue_.empty()) {
-        queue_locker.unlock();
-        std::this_thread::yield();
-        queue_locker.lock();
-    }
     auto value = queue_.front();
     queue_.pop();
-    queue_locker.unlock();
     return value;
   }
 
