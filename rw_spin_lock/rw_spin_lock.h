@@ -10,10 +10,16 @@ class RWSpinLock {
   }
 
   void LockRead() {
-    while (counter_and_flag_.load() & 1) {
+    for (auto expected = counter_and_flag_.load(), auto desired = expected + 2;;) {
+      while (expected & 1) {
         std::this_thread::yield();
+        expected = counter_and_flag_.load();
+        desired = expected + 2;
+      }
+      if (counter_and_flag_.compare_exchange_weak(expected, desired)) {
+        break;
+      }
     }
-    counter_and_flag_.fetch_add(2);
   }
 
   void UnlockRead() {
