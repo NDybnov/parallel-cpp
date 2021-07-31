@@ -23,6 +23,6 @@ T parallel_reduce(RandomAccessIterator begin, RandomAccessIterator end,
     for (auto& thread : threads) {
         thread.join();
     }
-    std::atomic<T> ans = std::reduce(res.begin(), res.end(), initial_value, func);
+    T ans = std::reduce(res.begin(), res.end(), initial_value, func);
     return ans;
 }
